@@ -17,7 +17,7 @@ dump 1 all xyz 10 movie.xyz #dump every 10 frames
 
 # MD
 fix      1 all nvt temp 500. 500.  0.1
-fix      plumed all plumed plumedfile plumed.dat outfile metaout.dat
+fix      plumed all plumed plumedfile plumed.dat outfile plumed.out
 thermo 100
 run 30000
 

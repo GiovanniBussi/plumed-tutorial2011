@@ -3,4 +3,6 @@ COLVAR.old
 diala.dcd
 log.lammps
 plumed.out
+HILLS
+HILLS.old
 
