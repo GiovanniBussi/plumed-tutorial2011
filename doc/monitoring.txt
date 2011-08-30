@@ -1,0 +1,205 @@
+/**
+\page monitoring Monitoring collective variables
+
+In this chapter we will see the basic instructions for creating a \c plumed.dat
+input files and review the output that it produces during the
+simulation. At the end of this chapter the user should be able to write a
+simple plumed input file and monitor the CVs of choice by simply
+consulting the manual for each CV individual syntax. The philosophy behind
+plumed requires
+that one may use the same input with different programs.
+This is only partly true because different programs have different internal
+units. Keep this in mind because it is crucial to
+understand which are the internal units of the program you are running before
+you do a simulation. It may let you save lots of human and computer time.
+Moreover, in all the CVs, one should specify the atoms involved in it. In
+different programs the atom indexing may be different.
+
+LAMMPS: distances and energies should be specified as in the LAMMPS input
+script
+
+QuantumESPRESSO: XXX
+
+\section input Input file
+
+A typical \c plumed.dat file is composed by specification of one
+or more CVs, the printout frequency and a termination line.
+
+\verbatim
+# printout frequency
+PRINT W_STRIDE 10
+# specify a torsion
+TORSION LIST 5 7 9 15
+# the end of plumed input
+ENDPLUMED
+\endverbatim
+
+Comments are denoted with a # and the termination of the input for plumed
+is marked with the keyword \c ENDPLUMED. Whatever follows is ignored by
+plumed.
+You can introduce blank lines, as they are not interpreted by plumed.
+
+The line that starts with the keyword \c PRINT controls the frequency
+for the main plumed output file
+which is called \c COLVAR. This file contains the data regarding the
+collective variable positions, the constraint positions,
+the energy of hills and energy of constraints and other useful informations
+that will be introduced time by time during the tutorial.
+The frequency for writing is controlled by \c W_STRIDE followed by a
+number that represents the <em>number of steps</em>  between one printout
+and the other. All the informations are written to the \c COLVAR.
+If an old \c COLVAR file is detected, this is 
+saved in a \c COLVAR.old file so as to prevent overwriting.
+As  this tutorial is not intended to give a survey on the all CVs available in
+plumed but more on the things you can do with that,
+please do refer to the manual for specific CV related syntax.
+
+\section groups Groups
+
+Another useful feature is the use of the groups.
+It may happen that one want to calculate properties between group of atoms.
+In this case the argument of the keyword \c LIST can be replaced by some groups denoted
+by angle bracket \c \<g1>.
+In this case plumed looks for a \em group in the plumed input.
+
+For many variables groups can be used instead of atoms to indicate that the
+center of mass of those atoms should be used. For example, the following
+input is computing the torsional angle among atoms 5, 7, 9 ane the center of
+mass of the group of atoms 15, 16 and 17:
+\verbatim
+# printout frequency
+PRINT W_STRIDE 10
+# specify a torsion
+TORSION LIST 5 7 9 <g1>
+# specify a group
+g1->
+15 16 17
+g1<-
+ENDPLUMED
+\endverbatim
+
+Notice however that in some case the meaning of a group is different (e.g. for
+the CVs \c COORD and \c HBONDS). Check the documentation of each CV in the
+manual.
+The group syntax also allows for looping on the atoms as well. Please refer to the manual for this option.
+
+\section monitoring Monitoring a CV
+
+As first example we perform a simple MD run of alanine dipeptide with GROMOS96
+all atom force field. In Fig. XX you can see the
+molecular structure. Its free energy landscape is conveniently depicted as
+function of the two dihedral angles \f$\Phi\f$ and \f$\Psi\f$ (also called
+"Ramachandan plot") and therefore in this exercise we just run simply
+plumed and control the two dihedral angles.
+
+\image html diala.png
+
+Now go the the directory \c monitor_1 of the tutorial.
+In this run we will perform 100 ps of NVT MD and check the evolution of the
+collective variables with this simple input. Here is the \c plumed.dat file
+\verbatim
+# printout frequency
+PRINT W_STRIDE 10
+# specify phi and psi
+TORSION LIST 5 7 9 15
+TORSION LIST 7 9 15 17
+ENDPLUMED
+\endverbatim
+
+To run the simulation just type
+\verbatim
+$ lmp_plumed < input
+\endverbatim
+
+A \c plumed.out file will be generated as
+\verbatim
+::::::::::::::::: READING PLUMED INPUT :::::::::::::::::
+|-PRINTING ON COLVAR FILE EVERY 10 STEPS
+|-INITIAL TIME OFFSET IS 0.000000 TIME UNITS
+
+1-TORSION: (1st SET: 1 ATOMS), (2nd SET: 1 ATOMS), (3rd SET: 1 ATOMS) , (4th
+SET: 1 ATOMS); 
+|- 1st SET MEMBERS:  5 
+|- 2nd SET MEMBERS:  7 
+|- 3rd SET MEMBERS:  9 
+|- 4th SET MEMBERS:  15 
+
+
+2-TORSION: (1st SET: 1 ATOMS), (2nd SET: 1 ATOMS), (3rd SET: 1 ATOMS) , (4th
+SET: 1 ATOMS); 
+|- 1st SET MEMBERS:  7 
+|- 2nd SET MEMBERS:  9 
+|- 3rd SET MEMBERS:  15 
+|- 4th SET MEMBERS:  17 
+
+|-ANALYSIS: YOU WILL ONLY MONITOR YOUR CVs DYNAMICS
+\endverbatim
+
+This tells you that everything is going fine. The index of atoms are parsed
+correctly and the printout is correctly understood.
+Now what you get is a \c COLVAR file that consists in the time evolution of
+the CVs.
+Its format looks something like this:
+\verbatim
+#! FIELDS time cv1 cv2 vbias vwall vext
+     0.000     -2.845176229      3.140506206      0.000000000      ...
+     2.000     -2.854964594      3.123953400      0.000000000      ...
+     4.000     -2.866214931      3.107481518      0.000000000      ...
+     6.000     -2.878660385      3.091753506      0.000000000      ...
+     ...      
+\endverbatim
+In the first line there is a simple remainder to the elements that you have in
+each column.
+Namely time first, then the value of the two CVs followed by the
+various additional potential energies introduced by plumed. In this case there
+is no additional potential
+introduced and therefore all those columns are zeros.
+Now you can plot the evolution of the CVs with gnuplot by using the  command
+\verbatim
+$ gnuplot
+gnuplot> set xlabel "time (ps)"
+gnuplot> set ylabel "angle (rad)"
+gnuplot> p "./COLVAR" u 1:2 t "Phi" ,"" u 1:3 t "Psi"
+\endverbatim
+and you'll get something like
+
+\image html plot_time.png
+
+\section driver Using the driver
+
+"Oh my god! I forgot to include that special CV!". No problem!
+Max Bonomi wrote the \c driver utility
+through which you may postprocess your run and calculate that special CV you
+forgot to include
+runtime. Of course, being limited to the points for which you actually have
+the trajectory  you don't have much statistics unless
+you collect very often the trajectory points (absolutely not recommended
+unless you want your supervisor hating you).
+To use the driver you need a trajectory in \c dcd format and a structure file
+in \c pdb format.
+Let us assume that what you forget to calculate is now the distance for NME3:H
+(atom 18) - ACE1:O (atom 6)
+and ALA2:O (atom 16) - ALA2:H (atom 8) .
+Then a you have to produce a new plumed input \c plumed2.dat
+
+\verbatim
+# in the driver, each timestep corresponds to a frame in the trajectory file
+PRINT W_STRIDE 1
+# the two distances that you want to plot
+DISTANCE LIST 18 6
+DISTANCE LIST 16 8
+ENDPLUMED
+\endverbatim
+and by using the following command
+\verbatim
+$ driver -pdb ala.pdb -dcd ala.dcd -ncv 2 -nopbc -plumed plumed2.dat 
+\endverbatim
+you get a new \c COLVAR file with the data you need and by now you should
+be able to check the data you are obtaining with gnuplot.
+
+If you are a VMD user, you can take advantage of the
+<a href="http://multiscalelab.org/utilities/PlumedCVTool">PlumedCVTool</a> developed
+by Toni Giorgino, which allows you to directly analyze a trajectory
+loaded in VMD with the PLUMED driver.
+
+*/

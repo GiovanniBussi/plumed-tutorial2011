@@ -1,0 +1,51 @@
+/**
+\page exercise2 Exercise II: SN2 reaction
+
+This section will show a simple chemical reaction example done with QUANTUM
+ESPRESSO  code.
+This code is meant here to do Born-Oppenheimer dynamics but PLUMED is also  
+implemented to work in the Car-Parrinello module of the suite.
+The goal of the exercise is to calculate the free energy for the reaction
+depicted in SN2.
+This reaction has been studied before XXX and here we will
+try to sketch out the barriers but the aim is to take a short amount of time.
+
+\verbatim
+&control
+    title = 'ch3cl',
+    calculation='md'
+    restart_mode='from_scratch',
+    pseudo_dir = '.',
+    outdir='.',
+    dt=20,
+    nstep=2000,
+    disk_io='low',
+    prefix = 'md',
+    use_plumed = .true.,
+ /
+\endverbatim
+Pay attention: in this code distances are in Bohr (1 Bohr = 0.529177249 A)
+and the energies in Rydberg ( 1 Ry=  313.755 kcal/mol ).
+
+
+For Metadynamics a possible input can be 
+\verbatim
+# switching on metadynamics and Gaussian parameters
+HILLS HEIGHT 0.001 W_STRIDE 2
+# instruction for CVs printout
+PRINT W_STRIDE 1
+# the distance between C-Cl' and C-Cl
+DISTANCE LIST 1 3 SIGMA 0.3
+DISTANCE LIST 2 3 SIGMA 0.3
+#WALLS: prevent to depart the two mols
+UWALL CV 1 LIMIT 7.0 KAPPA 100.0
+LWALL CV 1 LIMIT 2.5 KAPPA 100.0
+UWALL CV 2 LIMIT 7.0 KAPPA 100.0
+LWALL CV 2 LIMIT 2.5 KAPPA 100.0
+# end of the input
+ENDPLUMED
+\endverbatim
+Look at this same exercize in the full tutorial to see how to study this
+problem using different techniques!
+
+*/

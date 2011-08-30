@@ -1,0 +1,8 @@
+# adding a hills of height 0.1 kcal/mol every 0.2 ps
+HILLS W_STRIDE 100 HEIGHT 0.1
+PRINT W_STRIDE 100
+# hills width is 0.35 rad
+TORSION LIST 5 7 9 15 SIGMA 0.35
+# Psi is only monitored
+TORSION LIST 7 9 15 17
+ENDPLUMED

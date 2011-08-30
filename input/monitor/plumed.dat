@@ -1,0 +1,6 @@
+# printout frequency
+PRINT W_STRIDE 10
+# specify phi and psi
+TORSION LIST 5 7 9 15
+TORSION LIST 7 9 15 17
+ENDPLUMED

@@ -1,0 +1,72 @@
+/**
+\page basics Basics
+
+\section installing Installing PLUMED
+
+PLUMED is meant as a plugin which can be combined with several molecular
+dynamics (MD) engines which should be downloaded separately.
+As of PLUMED version 1.2.2, supported
+MD engines are
+- GROMACS
+- NAMD
+- AMBER
+- DLPOLY
+- ACEMD
+- LAMMPS
+- QuantumESPRESSO
+
+
+To be able to use PLUMED you have to:
+- Download, configure and compile the MD engine (note: some of them require a
+  license).
+- Download PLUMED <a href="http://www.plumed-code.org">here</a>.
+- Patch the MD engine using the proper patching script in PLUMED distribution
+  (in the \c patches/ directory)
+- Recompile the MD engine
+
+For more information, see the PLUMED manual at http://www.plumed-code.org
+
+This tutorial is based exclusively on LAMMPS and QuantumESPRESSO, which are
+open source projects that can be obtained free of charge.
+
+PLUMED also contains a few extra tools, including one to plot the free energy
+surface from a metadynamics simulation (\c utilities/sum_hills) and a driver to use PLUMED
+without an MD code to analyze a given trajectory (\c utilities/driver). Proper
+instructions to compile these tools can be found in the manual.
+
+In the following we will assume that the user has in the execution path the
+following commands:
+- \c lmp_plumed which is the patched LAMMPS executable.
+- \c pw_plumed.x which is the patched Quantum ESPRESSO executable.
+- \c sum_hills which is the program to plot free energies from metadynamics
+  simulations.
+- \c driver which is the tool to analyze trajectories.
+
+In case you don't have these commands in your path, you should follow
+installation instructions in the PLUMED manual to install these programs.
+
+\section activating Activating PLUMED
+
+The patched executable, by default, performs a standard molecular dynamics.
+If you want to use PLUMED, you should first tell to the MD code to activate
+it. The procedure depends on the code you are using.
+Options which are specific to PLUMED (e.g.: which collective variable to use,
+the parameters for metadynamics simulations, etc.)
+will be specified on an extra input file, usually named \c plumed.dat .
+
+For LAMMPS, you should add a fix \c plumed in the input script, as in following
+example:
+\verbatim
+fix plumed all plumed plumedfile plumed.dat outfile plumed.out
+\endverbatim
+The \c plumedfile options sets the name of the PLUMED input file.
+The \c outfile options sets the name of the PLUMED output file.
+
+Note that you can use only a single plumed fix.
+
+For QuantumESPRESSO
+
+TO BE COMPLETED
+
+
+*/

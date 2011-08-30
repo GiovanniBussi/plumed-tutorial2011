@@ -1,0 +1,63 @@
+/**
+\page exercise1 Exercise I: Stone-Wales transformation in a carbon nanotube
+
+As an example of an activated process in a condensed matter system we consider
+the Stone-Wales transformation in a carbon nanotube. This transformation
+can be seen as the rotation of a C-C dimer by 90\f$^\circ\f$, which leads
+to the conversion of four hexagons into two pentagons and two heptagons.
+During the process, which has been observed e.g. in nanotubes subject
+to strain, overall two covalent bonds are broken and two are formed, resulting
+in a large energy barrier of several eV.
+Here we consider a 480-atoms (10,0) carbon nanotube periodically repeated,
+and we adopt the AIREBO interatomic potential as implemented in lammps.
+One can imagine different suitable reaction coordinates for the Stone-Wales
+transformation. Here we use the number of covalent three-atoms bridges 
+among different groups of atoms, as detailed in Fig. ZZ
+Rotation of the C-C dimer leads to breaking of two "vertical" bridges
+and to forming two "horizontal" bridges. A suitable PLUMED CV is
+\c WATERBRIDGE (the name water has only historical sense since the CV
+was originally implemented to count the H-bonded bridges formed by water
+molecules between two protein surfaces).
+
+Input file for the Stone-Wales transformation in a carbon nanotube
+with LAMMPS:
+\verbatim
+# 0.4 eV (lammps "metal" units) every 50 fs (timestep = 1 fs)
+HILLS HEIGHT 0.4 W_STRIDE 50
+PRINT W_STRIDE 10
+
+WATERBRIDGE LIST <hor1> <hor2> <dimer> R_0 1.9 NN 8 MM 20 SIGMA 0.2
+hor1->
+  229 259
+hor1<-
+hor2->
+  226 256
+hor2<-
+dimer->
+  238 248
+dimer<-
+
+WATERBRIDGE LIST <ver1> <ver2> <dimer> R_0 1.9 NN 8 MM 20 SIGMA 0.2
+ver1->
+  256 259
+ver1<-
+ver2->
+  226 229
+ver2<-
+
+ENDPLUMED
+\endverbatim
+
+Within 10 ps of simulation, the Stone-Wales transformation occurs reversibly
+multiple times, and a FES can be reconstructed with \c sum_hills:
+\verbatim
+$ sum_hills -file HILLS -out fes.dat -ndim 2 -ndw 1 2
+\endverbatim
+\verbatim
+$ gnuplot
+> set pm3d
+> set contour base
+> splot 'fes.dat' with pm3d
+\endverbatim
+
+*/

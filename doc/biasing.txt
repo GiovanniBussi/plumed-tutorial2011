@@ -1,0 +1,314 @@
+/**
+\page biasing Biasing collective variables: metadynamics
+
+Using PLUMED you can also add a bias on the collective variables.
+Different biases can be applied, including restraints, soft walls,
+steered molecular dynamics, metadynamics, etc. We will focus here on
+metadynamics only.
+
+Metadynamics adds an external potential to the simulation.
+This bias potential acts on a restricted number of degrees of
+freedom of the system \f$\bm{S}(\bm{R})=(S_1      (\bm{R}),...,S_d(\bm{R}))\f$
+referred to as collective variables.
+The metadynamics potential \f$V(\bm{S},t)\f$ varies with time \f$t\f$ and is
+constructed
+as a sum of Gaussian functions, or hills, deposited during the simulation:
+
+\f[
+V(\bm{S},t)=\int_0^t\ dt^\prime \omega\exp\left(-\sum_{i=1}^{d} 
+\frac{(S_i(\bm{R})-S_i(\bm{R}(t^\prime))^2}{2\sigma_i^2} \right),
+\f]
+
+where \f$\sigma_i\f$ is the Gaussian width corresponding to the i-th CV
+and \f$\omega\f$ the rate at which the bias grows.
+In the practice, Gaussians of height equal to \f$W\f$ are deposited every
+\f$n\f$ MD steps
+so that \f$\omega=W /(n\Delta t) \f$ where \f$\Delta t\f$ is the MD timestep.
+
+In order to perform a metadynamics simulation we have to:
+- Choose wisely the set of CVs to address the problem. This is a long
+story.
+To cut it short, CVs
+*  should clearly distinguish between the initial state, the final state and
+the intermediates,
+* should describe all the slow events that are relevant to the process of
+interest,
+* their number should not be too large, otherwise it will take a very long
+time to fill the free energy surface.
+- Choose the Gaussian height \f$W\f$ and the deposition stride \f$\tau\f$
+These two variables determine the rate of energy added to your simulation.
+If this is too large, the free energy surface will be explored at a fast pace,
+but the reconstructed profile will be affected by large errors.
+If the rate is small, the reconstruction will be accurate, but it will take a
+longer time.
+The error on the reconstructed FES depends on the ratio \f$W/\tau\f$, not on the
+two parameters alone.
+- Choose the Gaussian width \f$\sigma_i\f$. This parameter determines the
+resolution
+of the reconstructed FES. The sum of Gaussians reproduces efficiently
+(i.e. in a finite simulation time) features of the FES on a scale
+larger than \f$\sigma_i\f$.
+A practical rule is to choose the width as a fraction (half or one third) of
+the
+CV fluctuations in an unbiased simulation. This is not a golden rule, since
+the value of the fluctuations
+is not universal but usually depends on the position in the CV space.
+
+To activate a metadynamics calculation in plumed you have to use the
+directive \c HILLS. The deposition stride \f$\tau\f$ is specified in unit of
+timestep by the keyword \c W_STRIDE, the height \f$W\f$ by \c HEIGHT in
+internal units of energy of the MD code used. The Gaussian width \f$\sigma_i\f$
+must
+be specified on the line of each CVs with the keyword \c SIGMA.
+
+A typical plumed input file for a metadynamics calculation looks as
+follows.
+
+\verbatim
+# adding a hills of height 0.1 kcal/mol every 0.2 ps
+HILLS W_STRIDE 100 HEIGHT 0.1
+PRINT W_STRIDE 100
+# hills width is 0.35 rad
+TORSION LIST 5 7 9 15 SIGMA 0.35
+ENDPLUMED
+\endverbatim
+
+Beside the usual \c COLVAR file, when you run a metadynamics calculation
+you
+get an additional file called \c HILLS which contains a list of the
+Gaussians
+deposited during the simulation.
+In the example above, this file would look like:
+
+\verbatim
+   200.000     -2.210466119      0.350000000      0.100000000   0.000 
+   400.000     -1.048053682      0.350000000      0.100000000   0.000 
+   600.000     -1.656697613      0.350000000      0.100000000   0.000 
+   800.000     -1.219777620      0.350000000      0.100000000   0.000 
+...
+\endverbatim
+
+where:
+
+- the first column contains the time \f$t\f$ (in internal unit of the MD code) at which
+the Gaussian was deposited;
+- the following \f$d\f$ columns contain the centroid of the Gaussian,
+\f$S_i(\bm{R}(t))\f$, one for each CV \f$i\f$;
+- the following \f$d\f$ columns contain the Gaussian sigma \f$\sigma_i\f$, one for
+each CV \f$i\f$;
+- the last but one column contains the value of \f$W\f$;
+- the last column is meaningful only in well-tempered metadynamics
+simulations (see below).
+This file contain the history dependent bias and
+will be used to calculate the estimate of the free-energy at the end
+of our metadynamics calculation.
+
+Beside the metadynamics CVs, we can add other variables that we want to
+monitor during the simulation.
+A typical plumed input file looks as:
+\verbatim
+# adding a hills of height 0.1 kcal/mol every 0.2 ps
+HILLS W_STRIDE 100 HEIGHT 0.1
+PRINT W_STRIDE 100
+# hills width is 0.35 rad
+TORSION LIST 5 7 9 15 SIGMA 0.35
+# this variable is only monitored - PLUMED knows it from the missing SIGMA keyword
+TORSION LIST 7 9 15 17 
+ENDPLUMED
+\endverbatim
+
+\image html meta.png
+
+The evolution of the additional variable can be monitored by looking at the
+\c COLVAR file.
+
+\verbatim
+#! FIELDS time cv1 cv2 vbias vwall vext
+     0.000     -2.845176229      3.140506206      0.000000000      0.000000000
+   200.000     -2.210466119      2.280498229      0.100000000      0.000000000
+   400.000     -1.048053682      1.577151570      0.100402547      0.000000000
+   600.000     -1.656697613      0.902848655      0.150649018      0.000000000
+   800.000     -1.219777620      0.207215863      0.236358998      0.000000000
+\endverbatim
+
+Notice that now the fourth column is different from zero, as it contains the
+history dependent potential which is growing during the simulation.
+
+\section restarting Restarting metadynamics
+
+In order to restart a metadynamics run, the flag \c RESTART must be added
+on the line of the directive \c HILLS.
+This allows a metadynamics simulation to be restarted after
+an interruption or after a run has finished. The \c HILLS files will be
+read
+at the beginning of the simulation and the bias potential applied to the
+dynamics. Note that the presence of the \c RESTART flag only affects
+the metadynamics part of the simulation, and thus the usual procedure for
+restarting a MD run must be followed. This depends on the
+particular MD engine used and can be found in the relative documentation.
+The following is an example of input file for restarting a
+metadynamics simulation.
+\verbatim
+HILLS W_STRIDE 100 HEIGHT 0.1 RESTART
+PRINT W_STRIDE 100
+# hills width is 0.35 rad
+TORSION LIST 5 7 9 15 SIGMA 0.35
+ENDPLUMED
+\endverbatim
+
+\section fes Free-energy reconstruction
+
+In the long-time limit, the bias potential of metadynamics converges to the
+free-energy changed in sign.
+At any time during the simulation we can sum the Gaussians deposited so far
+and obtain the current estimate
+of the FES using the utility \c sum_hills.
+This code is very flexible and can be executed with several options (see the
+manual).
+The most commonly used are:
+
+\verbatim
+  sum_hills -file HILLS -out fes.dat -ndim 3 -ndw 1 2 -kt 0.6 -ngrid 100 100
+   -file            input file with the list of Gaussians
+   -out             output file with the FES
+   -ndim            number of collective variables
+   -ndw             ID of the variables for FES in output
+   -ngrid           grid mesh dimension
+   -dp              grid bin size
+   -kt              $kT$ in the energy units
+   -stride          how often the FES is written
+   -2pi             ID of the variables with $[0;2\pi]$ periodicity
+   -pi              ID of the variables with $[-\pi;\pi]$ periodicity
+\endverbatim
+
+The file in output \c fes.dat contains the estimate of the free-energy
+calculated
+on a regular grid whose dimension is specified by either \c -ngrid or \c -dp.
+These parameters should be chosen with care. To calculate accurately the
+potential in a given point of the CV space, 
+a practical rule is to choose the bin size to be half the Gaussian sigma.
+
+Typical input choices are
+\verbatim
+# to reconstruct a two-dimensional FES from a two-variable metadynamics:
+$ sum_hills -file HILLS -out fes.dat -ndim 2 -ndw 1 2 -kt 0.6 
+# to reconstruct a one-dimensional projected FES (over the first variable) from a two-variable metadynamics:
+$ sum_hills -file HILLS -out fes.dat -ndim 2 -ndw 1 -kt 0.6 
+# to reconstruct a one-dimensional projected FES (over the second variable) from a two-variable metadynamics:
+$ sum_hills -file HILLS -out fes.dat -ndim 2 -ndw 2 -kt 0.6 
+# if the two variables are torsions, they are periodic on domain (-pi,pi):
+$ sum_hills -file HILLS -out fes.dat -ndim 2 -ndw 1 2 -kt 0.6 -pi 1 2
+\endverbatim
+
+Forgetting to specify periodicity with -pi is one of the most common errors,
+so be careful!!!!
+
+The \c sum_hills code should be used to monitor the convergence of a
+metadynamics simulation. 
+This can be easily achieved by calculating the estimate of the FES at regular
+interval in time
+using the \c -stride option and then evaluating the free-energy difference
+among 
+relevant regions (minima) of the FES as a function of time.
+Below we report an example of bash script that can be used for this purpose.
+
+Here we performed a metadynamics calculation using 2 CVs. We have defined two
+regions in the projection of the FES onto the first variable. The F region in
+which
+CV1 is greater than 2, and the U region in which CV1 is lower than 2.
+The free-energy difference between F and U is calculated as a function of time
+and saved in the file \c  DeltaF
+\verbatim
+#!/bin/bash
+ sum_hills -stride 100 -ndim 2 -ndw 1 -ngrid 100 100 -kt 0.6 -file HILLS
+ for file in fes.dat.? fes.dat.?? fes.dat.???
+ do
+  if [ -f ${file} ]; then
+    F=`awk 'BEGIN{tot=0}{if(NF==2 && $1>2.0)tot=tot+exp(-$2/0.6)}END{print -0.6*log(tot)}' $file`
+    U=`awk 'BEGIN{tot=0}{if(NF==2 && $1<=2.0)tot=tot+exp(-$2/0.6)}END{print -0.6*log(tot)}' $file`
+    delta=`echo "$F - $U" | bc -l`
+    echo $delta >> DeltaF
+  fi 
+ done
+\endverbatim
+
+\section welltempered Well-tempered metadynamics
+
+In well-tempered (WT) metadynamics, the Gaussian height \f$W\f$ is automatically
+rescaled during the simulations
+following:
+\f[
+W=W_0 \, e^{-\frac{V(\bm{S},t)}{k_B \Delta T}},
+\label{WT}
+\f]
+where \f$W_0\f$ is the initial Gaussian height and \f$\Delta T\f$ a parameter with the
+dimension of a temperature.
+The use of well tempered guarantees that the bias potential converges in a
+single simulation and does not
+oscillate around the FES value, causing the problem of overfilling:
+\f[
+V(\bm{S},t \rightarrow \infty) = -\frac{\Delta T}{T + \Delta T} F(\bm{S}) +C, 
+\f]
+where \f$T\f$ is the temperature of the system and \f$C\f$ a constant.
+
+The quantity \f$T+\Delta T\f$ is often referred to as the (fictitous) CV
+temperature, while
+the ratio \f$(T+\Delta T) / T\f$ as bias factor. 
+To perform a WT metadynamics simulation with plumed you have to 
+use the directive \c WELLTEMPERED and specify one of the parameters
+described above using
+either the keyword \c CV_TEMPERATURE or \c BIASFACTOR.
+In addition, the temperature of the system must be specified explicitly with
+\c SIMTEMP.
+
+Here are some practical rules to choose wisely the parameters in WT
+metadynamics simulations:
+- The bias factor (or equivalently the CV temperature) regulates how fast
+the amount of bias 
+potential added decreases with simulation time and eventually controls the
+extent of exploration.
+The choice of these parameters depends on the typical free-energy barriers
+involved in the process under study. 
+In biomolecular simulation, a bias factor of 10-15 which
+corresponds to barriers of the order of 6-9 kcal/mol at 300K is usually
+appropriate. Note that this parameter can be changed on-the-fly as needed. 
+
+- The optimal choice of the initial Gaussian height $W_0$ is less crucial
+and at the same time less trivial. It is irrilevant in the long time regime
+and affects only the transient part of the
+simulation. A short initial filling period can be desirable if the transverse
+degrees of freedom
+relax quickly, otherwise a moderate initial energy rate is a better choice. 
+
+The following is an example of input file 
+for a WT metadynamics simulation at 300 (internal units of temperature) with a
+bias factor equal to 15 and an initial
+Gaussian height of 0.4 (internal units of energy)
+\verbatim
+HILLS W\_STRIDE 1000 HEIGHT 0.4 \\
+WELLTEMPERED SIMTEMP 300 BIASFACTOR 15 \\
+TORSION LIST 5 7 9 15 SIGMA 0.35 \\
+ENDMETA 
+\endverbatim
+
+In WT metadynamics, the Gaussians height as written in the \c HILLS file
+is multiplied by the factor \f$(T+\Delta T)/ \Delta T\f$. This guarantees that
+when you sum the Gaussians (by means for example of the \c sum_hills code)
+you get directly the FES.
+The last column of the \c HILLS file contains the value of the bias factor
+used in the
+WT metadynamics simulation. For the example above, this file would look like:
+
+\verbatim
+     1.000     -2.617548716      0.350000000      0.428571429   15.000 
+     2.000     -2.718742869      0.350000000      0.423889087   15.000 
+     3.000     -2.662247736      0.350000000      0.419017741   15.000 
+     4.000     -2.380845469      0.350000000      0.418270876   15.000 
+     5.000     -2.119639700      0.350000000      0.420668977   15.000 
+\endverbatim
+
+
+
+
+
+*/
