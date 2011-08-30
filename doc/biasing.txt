@@ -285,9 +285,9 @@ for a WT metadynamics simulation at 300 (internal units of temperature) with a
 bias factor equal to 15 and an initial
 Gaussian height of 0.4 (internal units of energy)
 \verbatim
-HILLS W\_STRIDE 1000 HEIGHT 0.4 \\
-WELLTEMPERED SIMTEMP 300 BIASFACTOR 15 \\
-TORSION LIST 5 7 9 15 SIGMA 0.35 \\
+HILLS W_STRIDE 1000 HEIGHT 0.4
+WELLTEMPERED SIMTEMP 300 BIASFACTOR 15
+TORSION LIST 5 7 9 15 SIGMA 0.35
 ENDMETA 
 \endverbatim
 
