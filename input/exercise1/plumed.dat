@@ -1,0 +1,22 @@
+# 0.4 eV (lammps "metal" units) every 50 fs (timestep = 1 fs)
+HILLS HEIGHT 0.4 W_STRIDE 50
+PRINT W_STRIDE 10
+WATERBRIDGE LIST <hor1> <hor2> <dimer> R_0 1.9 NN 8 MM 20 SIGMA 0.2
+hor1->
+229 259
+hor1<-
+hor2->
+226 256
+hor2<-
+dimer->
+238 248
+dimer<-
+
+WATERBRIDGE LIST <ver1> <ver2> <dimer> R_0 1.9 NN 8 MM 20 SIGMA 0.2
+ver1->
+256 259
+ver1<-
+ver2->
+226 229
+ver2<-
+ENDPLUMED
