@@ -18,7 +18,9 @@ a longer tutorial which can be found
 <a href="http://sites.google.com/site/plumedtutorial2010">here</a>.
 The parts stolen from the longer tutorial were prepared by
 Massimiliano Bonomi, Davide Branduardi and Fabio Pietrucci,
-who are acknowledged here.
+who are strongly acknowledged here.
+
+This tutorial is based on PLUMED-1.2.2
 
 To download PLUMED and to find further documentation, mailing lists, etc.,
 the right place is the PLUMED webpage at http://www.plumed-code.org
