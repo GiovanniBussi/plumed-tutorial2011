@@ -27,15 +27,10 @@ open source projects that can be obtained free of charge.</b>
 
 For more information, see the PLUMED manual at http://www.plumed-code.org
 
-However, the QuantumESPRESSO community is releasing independently an ad hoc
-version of plumed which may have some improvement with respect to the official
-PLUMED+QE patch. Thus, for PLUMED+QE you have two alternatives:
-- Download QE 4.1.2 from QE website and PLUMED-1.2.2 from PLUMED website,
-  following the standard PLUMED installation procedure in the PLUMED manual.
-- Download both QE 4.5.3 and PLUMED-latest from QE website, following the QE
-  installation procedure for plugins.
-The resulting codes have small differences, in particular in the way PLUMED is
-activated (see \ref activating below) and in units.
+Notice that the QuantumESPRESSO community is releasing independently an <em>ad hoc</em>
+version of plumed which may have some difference with respect to the official
+PLUMED+QE patch. Here we are going to use the official PLUMED+QE version,
+which is based on QE-4.2.
 
 PLUMED also contains a few extra tools, including one to plot the free energy
 surface from a metadynamics simulation (\c utilities/sum_hills) and a driver to use PLUMED
@@ -45,9 +40,8 @@ instructions to compile these tools can be found in the manual.
 In the following we will assume that the user has in the execution path the
 following commands:
 - \c lmp_plumed which is the patched LAMMPS executable.
-- \c pw_plumed.x which is the patched Quantum ESPRESSO executable, compiled
-  using QE and PLUMED from the QE website.
-- \c sum_hills which is the program to plot free energies from metadynamics
+- \c pw_plumed.x which is the patched Quantum ESPRESSO executable.
+- \c sum_hills and \c sum_hills_mpi, which are programs to plot free energies from metadynamics
   simulations.
 - \c driver which is the tool to analyze trajectories.
 
@@ -70,12 +64,23 @@ fix plumed all plumed plumedfile plumed.dat outfile plumed.out
 \endverbatim
 The \c plumedfile options sets the name of the PLUMED input file.
 The \c outfile options sets the name of the PLUMED output file.
-
 Note that you can use only a single plumed fix.
 
-For QuantumESPRESSO, you just have to invoke the \c pw.x executable using a 
-\c -plumed flag. Notice that for QuantumESPRESSO the name of the plumed input
-file is hardcoded to \c plumed.dat
-
+For QuantumESPRESSO, you should add a \c use_plumed keyword to the \c control namelist, as
+in this example
+\verbatim
+  &control
+     title = 'ch3cl',
+     calculation='md'
+     restart_mode='from_scratch',
+     dt=20,
+     nstep=2000,
+     prefix = 'md',
+     use_plumed=true
+  /
+\endverbatim
+Notice that for QuantumESPRESSO the name of the plumed input
+file is hardcoded to \c plumed.dat and the output file is hardcoded to
+\c PLUMED.out.
 
 */

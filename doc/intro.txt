@@ -1,7 +1,7 @@
 /**
 \mainpage Plumed Tutorial (ASCMS, Sao Paulo, 2011)
 
-\author Giovanni Bussi (SISSA, Trieste, Italy)
+\author Giovanni Bussi (SISSA, Trieste, Italy), email:bussi@sissa.it
 \date September 15, 2011
 
 This is a short tutorial for 
@@ -20,7 +20,10 @@ The parts stolen from the longer tutorial were prepared by
 Massimiliano Bonomi, Davide Branduardi and Fabio Pietrucci,
 who are strongly acknowledged here.
 
-This tutorial is based on PLUMED-1.2.2
+The versions of the softwares used to prepare this tutorial are:
+PLUMED v1.2.2, LAMMPS v23Aug11, QuantumESPRESSO v4.2, albeit it should
+work also with newer versions. These softwares will be assumed to be
+available and already compiled.
 
 To download PLUMED and to find further documentation, mailing lists, etc.,
 the right place is the PLUMED webpage at http://www.plumed-code.org

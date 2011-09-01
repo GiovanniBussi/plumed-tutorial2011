@@ -16,9 +16,10 @@ Moreover, in all the CVs, one should specify the atoms involved in it. In
 different programs the atom indexing may be different.
 
 LAMMPS: distances and energies should be specified as in the LAMMPS input
-script
+script.
 
-QuantumESPRESSO: XXX
+QuantumESPRESSO: distances and energies are in atomic units (Rydberg) for
+the pw.x module and atomic units (Hartree) for the cp.x module.
 
 \section input Input file
 
@@ -85,16 +86,19 @@ The group syntax also allows for looping on the atoms as well. Please refer to t
 
 \section monitoring Monitoring a CV
 
-As first example we perform a simple MD run of alanine dipeptide with GROMOS96
-all atom force field. In Fig. XX you can see the
-molecular structure. Its free energy landscape is conveniently depicted as
+As first example we perform a simple MD run of alanine dipeptide with
+AMBER99SB all atom force field. Here you can see the molecular structure.
+
+\image html diala.png
+
+Its free energy landscape is conveniently depicted as
 function of the two dihedral angles \f$\Phi\f$ and \f$\Psi\f$ (also called
 "Ramachandan plot") and therefore in this exercise we just run simply
 plumed and control the two dihedral angles.
 
-\image html diala.png
 
-Now go the the directory \c monitor_1 of the tutorial.
+Now go the the directory \c monitor/ of the tutorial. Here you have a LAMMPS
+input file (\c input) and a force field file (\c data.input). 
 In this run we will perform 100 ps of NVT MD and check the evolution of the
 collective variables with this simple input. Here is the \c plumed.dat file
 \verbatim
@@ -165,6 +169,20 @@ and you'll get something like
 
 \image html plot_time.png
 
+The system is clearly jumping back and forth between two states.
+You can also look at the region explored in the two dimensional CV space
+by using
+\verbatim
+$ gnuplot
+gnuplot> set xlabel "Phi (rad)"
+gnuplot> set ylabel "Psi (rad)"
+gnuplot> set xrange [-3.14:3.14]
+gnuplot> set yrange [-3.14:3.14]
+gnuplot> p "./COLVAR" u 2:3 t ""
+\endverbatim
+
+\image html rama.png
+
 \section driver Using the driver
 
 "Oh my god! I forgot to include that special CV!". No problem!
@@ -192,7 +210,7 @@ ENDPLUMED
 \endverbatim
 and by using the following command
 \verbatim
-$ driver -pdb ala.pdb -dcd ala.dcd -ncv 2 -nopbc -plumed plumed2.dat 
+$ driver -pdb diala.pdb -dcd diala.dcd -ncv 2 -nopbc -plumed plumed2.dat 
 \endverbatim
 you get a new \c COLVAR file with the data you need and by now you should
 be able to check the data you are obtaining with gnuplot.
@@ -200,6 +218,8 @@ be able to check the data you are obtaining with gnuplot.
 If you are a VMD user, you can take advantage of the
 <a href="http://multiscalelab.org/utilities/PlumedCVTool">PlumedCVTool</a> developed
 by Toni Giorgino, which allows you to directly analyze a trajectory
-loaded in VMD with the PLUMED driver.
+loaded in VMD with the PLUMED driver. You will be able to select atoms
+using VMD syntax and (very useful for complex groups) and VMD will take care
+of file conversions for you. This plugin is alreay contained in VMD-1.9.
 
 */

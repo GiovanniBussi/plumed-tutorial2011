@@ -35,7 +35,8 @@ the intermediates,
 interest,
 * their number should not be too large, otherwise it will take a very long
 time to fill the free energy surface.
-- Choose the Gaussian height \f$W\f$ and the deposition stride \f$\tau\f$
+- Choose the Gaussian height \f$W\f$ and the deposition stride \f$\tau=n\Delta
+  t\f$
 These two variables determine the rate of energy added to your simulation.
 If this is too large, the free energy surface will be explored at a fast pace,
 but the reconstructed profile will be affected by large errors.
@@ -117,10 +118,9 @@ TORSION LIST 7 9 15 17
 ENDPLUMED
 \endverbatim
 
-\image html meta.png
-
 The evolution of the additional variable can be monitored by looking at the
 \c COLVAR file.
+
 
 \verbatim
 #! FIELDS time cv1 cv2 vbias vwall vext
@@ -130,6 +130,9 @@ The evolution of the additional variable can be monitored by looking at the
    600.000     -1.656697613      0.902848655      0.150649018      0.000000000
    800.000     -1.219777620      0.207215863      0.236358998      0.000000000
 \endverbatim
+
+\image html meta.png
+\image html rama_meta.png
 
 Notice that now the fourth column is different from zero, as it contains the
 history dependent potential which is growing during the simulation.
@@ -210,31 +213,52 @@ interval in time
 using the \c -stride option and then evaluating the free-energy difference
 among 
 relevant regions (minima) of the FES as a function of time.
-Below we report an example of bash script that can be used for this purpose.
 
-Here we performed a metadynamics calculation using 2 CVs. We have defined two
-regions in the projection of the FES onto the first variable. The F region in
-which
-CV1 is greater than 2, and the U region in which CV1 is lower than 2.
+With the following command
+\verbatim
+sum_hills.x -fes HILLS -ndim 1 -ndw 1 -pi 1 -stride 50
+\endverbatim
+you will obtain several \c fes.dat.xx files which represent the estimates
+of the free energy with an interval of 5 ps
+
+\image html fes.png
+
+
+Below we report an example of bash script that can be used for this purpose.
+Here we performed a metadynamics calculation using 1 CVs. We define two
+regions in the CV space: F=[-3:-1] and U=[0:2], which approximately contain the
+two relevant minima.
 The free-energy difference between F and U is calculated as a function of time
 and saved in the file \c  DeltaF
 \verbatim
 #!/bin/bash
- sum_hills -stride 100 -ndim 2 -ndw 1 -ngrid 100 100 -kt 0.6 -file HILLS
- for file in fes.dat.? fes.dat.?? fes.dat.???
+sum_hills.x -stride 10 -ndim 1 -ndw 1 -ngrid 100 100 -kt 0.6 -file HILLS -pi 1
+for file in fes.dat.? fes.dat.?? fes.dat.???
  do
   if [ -f ${file} ]; then
-    F=`awk 'BEGIN{tot=0}{if(NF==2 && $1>2.0)tot=tot+exp(-$2/0.6)}END{print -0.6*log(tot)}' $file`
-    U=`awk 'BEGIN{tot=0}{if(NF==2 && $1<=2.0)tot=tot+exp(-$2/0.6)}END{print -0.6*log(tot)}' $file`
+    F=`awk 'BEGIN{tot=0}{if(NF==2 && $1>-3.0 && $1<-1.0)tot=tot+exp(-$2/0.6)}END{print -0.6*log(tot)}' $file`
+    U=`awk 'BEGIN{tot=0}{if(NF==2 && $1>0.0 && $1<2.0)tot=tot+exp(-$2/0.6)}END{print -0.6*log(tot)}' $file`
     delta=`echo "$F - $U" | bc -l`
-    echo $delta >> DeltaF
-  fi 
- done
+    echo $delta
+  fi
+done > DeltaF
 \endverbatim
+
+\image html deltaf.png
+
+Under proper conditions, in can be shown that the estimates oscillates around
+the correct value. It is thus possible to have a better estimate of the free
+energy difference by taking the time average of this estimate.
+
+Notice that the amplitude of the oscillations depends on the rate at which
+hills are deposited. Play with the parameters to see it!
+
 
 \section welltempered Well-tempered metadynamics
 
-In well-tempered (WT) metadynamics, the Gaussian height \f$W\f$ is automatically
+Since the oscillations depends on the hills height, another possible approach
+to achieve convergence is well-tempered metadynamics. Here the 
+Gaussian height \f$W\f$ is automatically
 rescaled during the simulations
 following:
 \f[
@@ -282,13 +306,19 @@ relax quickly, otherwise a moderate initial energy rate is a better choice.
 
 The following is an example of input file 
 for a WT metadynamics simulation at 300 (internal units of temperature) with a
-bias factor equal to 15 and an initial
-Gaussian height of 0.4 (internal units of energy)
+bias factor equal to 10 and an initial
+Gaussian height of 0.4 (kcal/mol)
 \verbatim
-HILLS W_STRIDE 1000 HEIGHT 0.4
-WELLTEMPERED SIMTEMP 300 BIASFACTOR 15
+# adding a hills of height 0.1 kcal/mol every 0.2 ps
+HILLS W_STRIDE 100 HEIGHT 0.1
+WELLTEMPERED SIMTEMP 300 BIASFACTOR 10
+PRINT W_STRIDE 100
+# hills width is 0.35 rad
 TORSION LIST 5 7 9 15 SIGMA 0.35
-ENDMETA 
+# this variable is only monitored - PLUMED knows it from the missing SIGMA
+# keyword
+TORSION LIST 7 9 15 17
+ENDPLUMED
 \endverbatim
 
 In WT metadynamics, the Gaussians height as written in the \c HILLS file
@@ -298,17 +328,18 @@ you get directly the FES.
 The last column of the \c HILLS file contains the value of the bias factor
 used in the
 WT metadynamics simulation. For the example above, this file would look like:
-
 \verbatim
-     1.000     -2.617548716      0.350000000      0.428571429   15.000 
-     2.000     -2.718742869      0.350000000      0.423889087   15.000 
-     3.000     -2.662247736      0.350000000      0.419017741   15.000 
-     4.000     -2.380845469      0.350000000      0.418270876   15.000 
-     5.000     -2.119639700      0.350000000      0.420668977   15.000 
+   200.000     -2.210466119      0.350000000      0.111111111   10.000 
+   400.000     -1.048053682      0.350000000      0.111102775   10.000 
+   600.000     -1.656696885      0.350000000      0.110067210   10.000 
+   800.000     -1.219854752      0.350000000      0.108331640   10.000 
+  1000.000     -1.520507160      0.350000000      0.106770895   10.000 
+  1200.000     -1.238176320      0.350000000      0.104998128   10.000 
+  1400.000     -1.374727501      0.350000000      0.103010533   10.000 
+  1600.000     -1.284902815      0.350000000      0.101324392   10.000 
+  1800.000     -1.463756025      0.350000000      0.100049686   10.000 
+  2000.000     -1.339514323      0.350000000      0.097986463   10.000 
 \endverbatim
-
-
-
 
 
 */
