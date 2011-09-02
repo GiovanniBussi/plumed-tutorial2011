@@ -341,5 +341,23 @@ WT metadynamics simulation. For the example above, this file would look like:
   2000.000     -1.339514323      0.350000000      0.097986463   10.000 
 \endverbatim
 
+\image html deltaf-wt.png
+
+A further effect of the \c BIASFACTOR parameter is to tune the explored region
+of the CV space. This is better seen in two dimensions. Try to perform two
+dimensional metadynamics using:
+\verbatim
+# adding a hills of height 0.1 kcal/mol every 0.2 ps
+HILLS W_STRIDE 100 HEIGHT 0.1
+WELLTEMPERED SIMTEMP 300 BIASFACTOR 10
+PRINT W_STRIDE 100
+# hills width is 0.35 rad
+TORSION LIST 5 7 9 15 SIGMA 0.35
+TORSION LIST 7 9 15 17 SIGMA 0.35
+ENDPLUMED
+\endverbatim
+and study how the explored domain depends on the choice of \c BIASFACTOR.
+
+
 
 */
