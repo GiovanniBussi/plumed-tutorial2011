@@ -7,7 +7,8 @@
     dt=20,
     nstep=2000,
     disk_io='low',
-    prefix = 'md'
+    prefix = 'md',
+  use_plumed=true
  /
  &system
     ibrav = 8,
