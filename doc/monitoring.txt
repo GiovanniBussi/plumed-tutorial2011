@@ -219,7 +219,7 @@ If you are a VMD user, you can take advantage of the
 <a href="http://multiscalelab.org/utilities/PlumedCVTool">PlumedCVTool</a> developed
 by Toni Giorgino, which allows you to directly analyze a trajectory
 loaded in VMD with the PLUMED driver. You will be able to select atoms
-using VMD syntax and (very useful for complex groups) and VMD will take care
+using VMD syntax (very useful for complex groups) and VMD will take care
 of file conversions for you. This plugin is alreay contained in VMD-1.9.
 
 */

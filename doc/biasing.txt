@@ -285,6 +285,15 @@ either the keyword \c CV_TEMPERATURE or \c BIASFACTOR.
 In addition, the temperature of the system must be specified explicitly with
 \c SIMTEMP.
 
+\attention Due to a known bug in the PLUMED-cp.x interface, the
+Boltzmann constant is wrongly expressed in Ry/K even with cp.x.
+Thus, if you have to provide a temperature in the plumed.dat file
+and you are using PLUMED with cp.x, use half of the physical temperature
+(e.g., for a simulation at 300 use \c SIMTEMP 150). This is not
+a problem for the present tutorial since we are only using pw.x. Moreover,
+this problem has been solved in the PLUMED version from QE website, where
+Rydberg units are used for both pw.x and cp.x
+
 Here are some practical rules to choose wisely the parameters in WT
 metadynamics simulations:
 - The bias factor (or equivalently the CV temperature) regulates how fast

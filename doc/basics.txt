@@ -14,7 +14,7 @@ As of PLUMED version 1.2.2, supported MD engines are
 - LAMMPS (15 Jan 2010 - 24 Sep 2010)
 - QUANTUM-ESPRESSO (4.1.2 - 4.2.0)
 
-In general, the correct procedure to be able to use PLUMED is:
+In general, the correct procedure to install PLUMED is:
 - Download, configure and compile the MD engine (note: some of them require a
   license).
 - Download PLUMED <a href="http://www.plumed-code.org">here</a>.
@@ -22,13 +22,13 @@ In general, the correct procedure to be able to use PLUMED is:
   (in the \c patches/ directory)
 - Recompile the MD engine
 
-<b>This tutorial is based exclusively on LAMMPS and QuantumESPRESSO, which are
+<b>This tutorial is based exclusively on PLUMED, LAMMPS and QuantumESPRESSO (QE), which are
 open source projects that can be obtained free of charge.</b>
 
 For more information, see the PLUMED manual at http://www.plumed-code.org
 
-Notice that the QuantumESPRESSO community is releasing independently an <em>ad hoc</em>
-version of plumed which may have some difference with respect to the official
+Notice that the QE community is releasing independently an <em>ad hoc</em>
+version of PLUMED which may have some difference with respect to the official
 PLUMED+QE patch. Here we are going to use the official PLUMED+QE version,
 which is based on QE-4.2.
 
@@ -40,13 +40,13 @@ instructions to compile these tools can be found in the manual.
 In the following we will assume that the user has in the execution path the
 following commands:
 - \c lmp_plumed which is the patched LAMMPS executable.
-- \c pw_plumed.x which is the patched Quantum ESPRESSO executable.
+- \c pw_plumed.x which is the patched executable for the pw.x module of QE.
 - \c sum_hills and \c sum_hills_mpi, which are programs to plot free energies from metadynamics
   simulations.
 - \c driver which is the tool to analyze trajectories.
 
 In case you don't have these commands in your path, you should follow
-installation instructions in the PLUMED manual to install these programs.
+installation instructions in the PLUMED manual to install them.
 
 \section activating Activating PLUMED
 
@@ -66,7 +66,7 @@ The \c plumedfile options sets the name of the PLUMED input file.
 The \c outfile options sets the name of the PLUMED output file.
 Note that you can use only a single plumed fix.
 
-For QuantumESPRESSO, you should add a \c use_plumed keyword to the \c control namelist, as
+For QE, you should add a \c use_plumed keyword to the \c control namelist, as
 in this example
 \verbatim
   &control
@@ -79,8 +79,11 @@ in this example
      use_plumed=true
   /
 \endverbatim
-Notice that for QuantumESPRESSO the name of the plumed input
+Notice that for QE the name of the plumed input
 file is hardcoded to \c plumed.dat and the output file is hardcoded to
-\c PLUMED.out.
+\c PLUMED.out. Also notice that this way of switching on PLUMED is going to
+change in the next release (and it has already been changed in the PLUMED
+version that you find in the QE website). In case of doubt, refer
+to the proper documentation.
 
 */
