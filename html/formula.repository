@@ -1,0 +1,28 @@
+\form#0:$\Phi$
+\form#1:$\Psi$
+\form#2:$\bm{S}(\bm{R})=(S_1 (\bm{R}),...,S_d(\bm{R}))$
+\form#3:$V(\bm{S},t)$
+\form#4:$t$
+\form#5:\[ V(\bm{S},t)=\int_0^t\ dt^\prime \omega\exp\left(-\sum_{i=1}^{d} \frac{(S_i(\bm{R})-S_i(\bm{R}(t^\prime))^2}{2\sigma_i^2} \right), \]
+\form#6:$\sigma_i$
+\form#7:$\omega$
+\form#8:$W$
+\form#9:$n$
+\form#10:$\omega=W /(n\Delta t) $
+\form#11:$\Delta t$
+\form#12:$\tau=n\Delta t$
+\form#13:$W/\tau$
+\form#14:$\tau$
+\form#15:$d$
+\form#16:$S_i(\bm{R}(t))$
+\form#17:$i$
+\form#18:\[ W=W_0 \, e^{-\frac{V(\bm{S},t)}{k_B \Delta T}}, \label{WT} \]
+\form#19:$W_0$
+\form#20:$\Delta T$
+\form#21:\[ V(\bm{S},t \rightarrow \infty) = -\frac{\Delta T}{T + \Delta T} F(\bm{S}) +C, \]
+\form#22:$T$
+\form#23:$C$
+\form#24:$T+\Delta T$
+\form#25:$(T+\Delta T) / T$
+\form#26:$(T+\Delta T)/ \Delta T$
+\form#27:$^\circ$
